@@ -27,17 +27,9 @@ ENV APP_HOME /app
 WORKDIR $APP_HOME
 COPY . ./
 
-#Install glibc for wheel buidling
-RUN set -e; \
-	apk add --no-cache --virtual .build-deps \
-		gcc \
-		libc-dev \
-		linux-headers \
-	; \
-	pip install -r requirements-main.txt; \
-	apk del .build-deps;
-# Install production dependencies.
-RUN pip install --no-cache-dir -r requirements.txt
+#Install gcc for wheel building and python deps
+RUN set -e; apk add --no-cache --virtual .build-deps gcc libc-dev linux-headers; pip install -r requirements-main.txt; apk del .build-deps;
+
 
 
 #Add dir for multiprocessing mode
