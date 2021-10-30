@@ -28,7 +28,9 @@ WORKDIR $APP_HOME
 COPY . ./
 
 #Install gcc for wheel building and python deps
-RUN set -e; apk add --no-cache --virtual .build-deps gcc libc-dev linux-headers; pip install -r requirements-main.txt; apk del .build-deps;
+RUN apk add --no-cache --virtual .build-deps gcc libc-dev linux-headers; 
+RUN pip install -r requirements-main.txt; 
+RUN apk del .build-deps;
 
 
 
