@@ -29,7 +29,7 @@ COPY . ./
 
 #Install gcc for wheel building and python deps
 RUN apk add --no-cache --virtual .build-deps gcc libc-dev linux-headers; 
-RUN pip install -r requirements-main.txt; 
+RUN pip install -r requirements.txt; 
 RUN apk del .build-deps;
 
 
