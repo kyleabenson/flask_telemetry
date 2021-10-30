@@ -35,4 +35,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 ENV PROMETHEUS_MULTIPROC_DIR /tmp
 ENV prometheus_multiproc_dir /tmp
 # Setup uWSGI
-CMD uwsgi --http 127.0.0.1:$PORT --wsgi-file myapp.py --callable app
+CMD uwsgi --http :$PORT --wsgi-file myapp.py --callable app
