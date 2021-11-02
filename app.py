@@ -13,7 +13,6 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-
 import os, datetime, time, sys, logging, random 
 
 from flask import Flask, render_template, request, jsonify, g, make_response, has_request_context
@@ -22,7 +21,7 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_client import make_wsgi_app, Summary, Counter, Histogram
 from datetime import datetime
 from logging.config import dictConfig
-
+from prometheus_flask_exporter.multiprocess import UWsgiPrometheusMetrics
 
 # Customize Logging Formats to Capture IP
 class RequestFormatter(logging.Formatter):
@@ -55,30 +54,8 @@ dictConfig({
 
 # Create app
 app = Flask(__name__)
-
-#Create Counters for Prometheus
-request_count = Counter(
-    'request_count', 'App Request Count',
-    ['app_name', 'method', 'endpoint', 'http_status']
-)
-request_latency = Histogram('request_latency_seconds', 'Request latency',
-    ['app_name', 'endpoint']
-)
-error_count = Counter(
-    'error_count', 'App Request ending in Error',
-    ['app_name', 'method', 'endpoint', 'http_status']
-)
-
-@app.before_request
-def before_request():
-  g.start = time.time()
-
-@app.after_request
-def after_request(response):
-    g.end = time.time() - g.start
-    request_latency.labels('test_app', request.path).observe(g.end)
-    request_count.labels('test_app', request.method, request.path, response.status_code).inc()
-    return response
+metrics = UWsgiPrometheusMetrics(app)
+metrics.register_endpoint('/metrics')
 
 @app.route("/")
 def index():
@@ -116,10 +93,7 @@ def page_not_found(e):
     app.logger.error(f"404 Error page not found {request.url}")
     return jsonify(message="404 Error page not found", request_time=datetime.now() ), 404
 
-# Create prometheus wsgi middleware to for /metrics 
-app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-    '/metrics': make_wsgi_app() 
-})
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+if __name__ == '__main__':
+    metrics.start_http_server(9100)
+    app.run(debug=False, port=5000)
