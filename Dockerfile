@@ -35,4 +35,4 @@ RUN apt-get -qq -y update; apt-get -qq -y gcc libc-dev linux-headers; pip instal
 ENV PROMETHEUS_MULTIPROC_DIR /tmp
 ENV prometheus_multiproc_dir /tmp
 # Setup uWSGI
-CMD uwsgi --http :$PORT --wsgi-file app.py --callable app
+CMD uwsgi --http 0.0.0.0:4000 --module server:app --master --processes 4 --threads 2
